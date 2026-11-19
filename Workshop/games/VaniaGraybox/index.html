@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VaniaGraybox</title>
+<style>
+  @font-face { font-family: 'Viva Receipt'; src: url('assets/fonts/VivaReceipt-Pixel.ttf'); }
+  html, body { margin: 0; height: 100%; background: #0d0d0d; color: #e6e6e6; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center;
+         font: 16px 'Viva Receipt', monospace; letter-spacing: .02em; }
+  canvas { image-rendering: pixelated; display: block; }
+  #hud { height: 26px; line-height: 26px; margin-top: 10px; white-space: pre; }
+  #help { position: fixed; top: 16px; left: 16px; white-space: pre; line-height: 1.618;
+          background: rgba(13,13,13,.88); padding: 16px 26px; }
+</style>
+</head>
+<body>
+<canvas id="game" width="320" height="180"></canvas>
+<div id="hud">LOADING</div>
+<div id="help">VANIAGRAYBOX
+
+MOVE         ARROWS / A D
+CROUCH       DOWN / S
+JUMP         SPACE / Z / W
+ATTACK       X / J   (+DOWN = CROUCH ATTACK, IN AIR = JUMP ATTACK)
+BACKDASH     C / K
+HURT  DIE    H   9
+RESET        R
+
+VIEWER       V   (CYCLE WITH [ ] OR ARROWS)
+GUIDES       G   (CELL BOX + PIVOT)
+SLOW 1/4     T
+RELOAD ART   L   (AFTER A NEW ASEPRITE EXPORT)
+THIS HELP    ?</div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

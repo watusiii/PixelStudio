@@ -1,0 +1,48 @@
+{
+ "view": {
+  "w": 320,
+  "h": 180
+ },
+ "width": 1600,
+ "floorY": 148,
+ "back": [
+  {
+   "name": "sky",
+   "image": "assets/room/sky.png",
+   "speed": 0.0,
+   "repeat": false
+  },
+  {
+   "name": "far",
+   "image": "assets/room/far.png",
+   "speed": 0.2361,
+   "repeat": true
+  },
+  {
+   "name": "mid",
+   "image": "assets/room/mid.png",
+   "speed": 0.382,
+   "repeat": true
+  },
+  {
+   "name": "near",
+   "image": "assets/room/near.png",
+   "speed": 0.618,
+   "repeat": true
+  }
+ ],
+ "floor": {
+  "image": "assets/room/floor.png"
+ },
+ "front": [
+  {
+   "name": "front",
+   "image": "assets/room/front.png",
+   "speed": 1.618,
+   "repeat": true
+  }
+ ],
+ "spawn": {
+  "x": 64
+ }
+}
