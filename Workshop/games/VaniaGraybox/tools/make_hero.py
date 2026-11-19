@@ -32,7 +32,7 @@ V = {
     "upperLeg": 0.25, "lowerLeg": 0.25, "foot": 0.1666,
 }
 L = {k: v * HERO_H for k, v in V.items()}
-THICK = {"torso": 7, "upperLeg": 4, "lowerLeg": 3, "upperArm": 3, "forearm": 2}
+THICK = {"torso": 7, "upperLeg": 5, "lowerLeg": 4, "upperArm": 4, "forearm": 3}
 
 NEAR, FAR, SWORD = (0, 0, 0, 255), (110, 110, 110, 255), (60, 60, 60, 255)
 
@@ -85,7 +85,7 @@ def solve(pose):
     up = 180 - pose["lean"]                    # torso points up, tilted forward by lean
     sternum = at(hip, up, L["torso"])
     chin = at(sternum, up, L["neck"])
-    head_c = at(chin, up, L["head"] / 2)
+    head_c = at(chin, up, L["head"] / 2); head_c = (head_c[0] + 1.0, head_c[1])
     bones = []
     def leg(h, k, col, layer):
         knee = at(hip, h, L["upperLeg"]); ankle = at(knee, h - k, L["lowerLeg"])
@@ -96,15 +96,17 @@ def solve(pose):
     def arm(s, e, col, layer, sword=None):
         elbow = at(sternum, s, L["upperArm"]); wrist = at(elbow, s + e, L["forearm"])
         hand = at(wrist, s + e, L["hand"] * 0.6)
-        bones.extend([(layer, sternum, elbow, THICK["upperArm"], col),
+        sh = at(sternum, 0, 2.0)               # shoulder sits just under the neck line
+        bones.extend([(layer, sh, sh, 6, col), (layer, sh, elbow, THICK["upperArm"], col),
                        (layer, elbow, wrist, THICK["forearm"], col),
                        (layer, wrist, hand, 2, col)])
         if sword is not None:
             tip = at(hand, s + e + sword, HERO_H * 0.32)   # sword: blade angle off the forearm, 0 = straight on
             bones.append((3, hand, tip, 1, SWORD))
     leg(pose["fh"], pose["fk"], FAR, 0); arm(pose["fs"], pose["fe"], FAR, 0)
-    bones.append((1, hip, sternum, THICK["torso"], NEAR))
-    bones.append((1, sternum, chin, 3, NEAR))
+    # torso as a tapered body (not a tube): hips, narrow waist, deep chest pushed forward, thin neck
+    bones.append((1, hip, sternum, None, NEAR))
+    bones.append((1, sternum, chin, 2, NEAR))
     leg(pose["nh"], pose["nk"], NEAR, 2); arm(pose["ns"], pose["ne"], NEAR, 2, pose["sword"])
     if pose["roll"]:
         r = math.radians(pose["roll"]); c, s_ = math.cos(r), math.sin(r)
@@ -116,7 +118,7 @@ def solve(pose):
 # --- adapter: draw a pose into a cell -------------------------------------------------
 def draw_pose(pose):
     bones, head_c = solve(pose)
-    r = L["head"] / 2
+    r = L["head"] / 2 - 0.6           # head reads smaller than the shoulders
     pts = [q for _, a, b, *_ in bones for q in (a, b)] + [(head_c[0], head_c[1] + r)]
     low = max(q[1] for q in pts)               # lowest point lands on the pivot row
     xs = [q[0] for q in pts]; mid = (min(xs) + max(xs)) / 2 if pose["roll"] else 0.0
@@ -126,6 +128,16 @@ def draw_pose(pose):
     for layer in (0, 1, 2, 3):
         for l, a, b, t, col in bones:
             if l != layer: continue
+            if t is None:                      # tapered torso
+                Lt = math.dist(a, b); ax, ay = (b[0] - a[0]) / Lt, (b[1] - a[1]) / Lt
+                nx, ny = -ay, ax                # forward side of the torso
+                prof = [(0.0, 3.4, 3.4), (0.42, 2.6, 2.4), (0.8, 3.6, 4.6), (1.0, 3.6, 3.0)]  # (t, back, front)
+                front, back = [], []
+                for tt, bk, fr in prof:
+                    cx, cy = a[0] + ax * Lt * tt, a[1] + ay * Lt * tt
+                    front.append(T((cx + nx * fr, cy + ny * fr))); back.append(T((cx - nx * bk, cy - ny * bk)))
+                d.polygon(front + back[::-1], fill=NEAR)
+                continue
             d.line([T(a), T(b)], fill=col, width=t)
             for q in (a, b):
                 x, y = T(q); h = t // 2
