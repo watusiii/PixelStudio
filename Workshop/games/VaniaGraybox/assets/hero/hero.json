@@ -438,7 +438,7 @@
     "w": 64,
     "h": 64
    },
-   "duration": 110
+   "duration": 90
   },
   {
    "filename": "hero 20.aseprite",
@@ -460,7 +460,7 @@
     "w": 64,
     "h": 64
    },
-   "duration": 110
+   "duration": 140
   },
   {
    "filename": "hero 21.aseprite",
@@ -482,7 +482,7 @@
     "w": 64,
     "h": 64
    },
-   "duration": 220
+   "duration": 130
   },
   {
    "filename": "hero 22.aseprite",
@@ -504,7 +504,7 @@
     "w": 64,
     "h": 64
    },
-   "duration": 160
+   "duration": 130
   },
   {
    "filename": "hero 23.aseprite",
@@ -526,13 +526,189 @@
     "w": 64,
     "h": 64
    },
-   "duration": 260
+   "duration": 130
   },
   {
    "filename": "hero 24.aseprite",
    "frame": {
     "x": 0,
     "y": 192,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   },
+   "duration": 130
+  },
+  {
+   "filename": "hero 25.aseprite",
+   "frame": {
+    "x": 64,
+    "y": 192,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   },
+   "duration": 140
+  },
+  {
+   "filename": "hero 26.aseprite",
+   "frame": {
+    "x": 128,
+    "y": 192,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   },
+   "duration": 140
+  },
+  {
+   "filename": "hero 27.aseprite",
+   "frame": {
+    "x": 192,
+    "y": 192,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   },
+   "duration": 110
+  },
+  {
+   "filename": "hero 28.aseprite",
+   "frame": {
+    "x": 256,
+    "y": 192,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   },
+   "duration": 110
+  },
+  {
+   "filename": "hero 29.aseprite",
+   "frame": {
+    "x": 320,
+    "y": 192,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   },
+   "duration": 220
+  },
+  {
+   "filename": "hero 30.aseprite",
+   "frame": {
+    "x": 384,
+    "y": 192,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   },
+   "duration": 160
+  },
+  {
+   "filename": "hero 31.aseprite",
+   "frame": {
+    "x": 448,
+    "y": 192,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   },
+   "duration": 260
+  },
+  {
+   "filename": "hero 32.aseprite",
+   "frame": {
+    "x": 0,
+    "y": 256,
     "w": 64,
     "h": 64
    },
@@ -558,7 +734,7 @@
   "format": "RGBA8888",
   "size": {
    "w": 512,
-   "h": 256
+   "h": 320
   },
   "scale": "1",
   "frameTags": [
@@ -626,23 +802,51 @@
     "color": "#000000ff"
    },
    {
-    "name": "backdash",
+    "name": "shoot",
     "from": 19,
     "to": 20,
     "direction": "forward",
     "color": "#000000ff"
    },
    {
-    "name": "hurt",
+    "name": "walk_shoot",
     "from": 21,
-    "to": 21,
+    "to": 24,
+    "direction": "forward",
+    "color": "#000000ff"
+   },
+   {
+    "name": "crouch_shoot",
+    "from": 25,
+    "to": 25,
+    "direction": "forward",
+    "color": "#000000ff"
+   },
+   {
+    "name": "jump_shoot",
+    "from": 26,
+    "to": 26,
+    "direction": "forward",
+    "color": "#000000ff"
+   },
+   {
+    "name": "backdash",
+    "from": 27,
+    "to": 28,
+    "direction": "forward",
+    "color": "#000000ff"
+   },
+   {
+    "name": "hurt",
+    "from": 29,
+    "to": 29,
     "direction": "forward",
     "color": "#000000ff"
    },
    {
     "name": "death",
-    "from": 22,
-    "to": 24,
+    "from": 30,
+    "to": 32,
     "direction": "forward",
     "color": "#000000ff"
    }
@@ -670,6 +874,84 @@
       "pivot": {
        "x": 32,
        "y": 62
+      }
+     }
+    ]
+   },
+   {
+    "name": "muzzle",
+    "color": "#ff0000ff",
+    "keys": [
+     {
+      "frame": 19,
+      "bounds": {
+       "x": 58,
+       "y": 23,
+       "w": 1,
+       "h": 1
+      }
+     },
+     {
+      "frame": 20,
+      "bounds": {
+       "x": 57,
+       "y": 19,
+       "w": 1,
+       "h": 1
+      }
+     },
+     {
+      "frame": 21,
+      "bounds": {
+       "x": 59,
+       "y": 25,
+       "w": 1,
+       "h": 1
+      }
+     },
+     {
+      "frame": 22,
+      "bounds": {
+       "x": 59,
+       "y": 23,
+       "w": 1,
+       "h": 1
+      }
+     },
+     {
+      "frame": 23,
+      "bounds": {
+       "x": 59,
+       "y": 25,
+       "w": 1,
+       "h": 1
+      }
+     },
+     {
+      "frame": 24,
+      "bounds": {
+       "x": 59,
+       "y": 23,
+       "w": 1,
+       "h": 1
+      }
+     },
+     {
+      "frame": 25,
+      "bounds": {
+       "x": 63,
+       "y": 36,
+       "w": 1,
+       "h": 1
+      }
+     },
+     {
+      "frame": 26,
+      "bounds": {
+       "x": 60,
+       "y": 27,
+       "w": 1,
+       "h": 1
       }
      }
     ]

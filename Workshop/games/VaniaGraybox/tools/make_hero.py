@@ -40,7 +40,7 @@ NEAR, FAR, SWORD = (0, 0, 0, 255), (110, 110, 110, 255), (60, 60, 60, 255)
 # Angles in degrees. Limbs: 0 = straight down, + = swung forward (toward facing).
 # knee: how much the shin folds back from the thigh. elbow: how much the forearm folds forward.
 # lean: torso tilt forward from upright. roll: whole-body rotation (death).
-BASE = dict(lean=3, nh=4, nk=6, fh=-4, fk=6, ns=6, ne=14, fs=-6, fe=14, sword=None, roll=0)
+BASE = dict(lean=3, nh=4, nk=6, fh=-4, fk=6, ns=6, ne=14, fs=-6, fe=14, sword=None, gun=False, roll=0)
 
 def P(**kw):
     p = dict(BASE); p.update(kw); return p
@@ -65,6 +65,14 @@ MOVES = {
     "jump_attack": [(P(lean=8, nh=62, nk=95, fh=12, fk=55, ns=140, ne=25, sword=50), 70),
                     (P(lean=18, nh=55, nk=90, fh=15, fk=60, ns=55, ne=0, sword=0), 100),
                     (P(lean=12, nh=50, nk=85, fh=15, fk=55, ns=25, ne=25, sword=-10), 140)],
+    "shoot": [(P(lean=2, ns=88, ne=0, fs=-10, gun=True), 90),
+              (P(lean=-2, ns=94, ne=4, fs=-12, gun=True), 140)],
+    "walk_shoot": [(P(nh=26, nk=4,  fh=-22, fk=14, ns=88, ne=0, fs=20, gun=True), 130),
+                   (P(nh=2,  nk=6,  fh=8,   fk=48, ns=88, ne=0, fs=0, gun=True), 130),
+                   (P(nh=-22, nk=14, fh=26, fk=4,  ns=88, ne=0, fs=-20, gun=True), 130),
+                   (P(nh=8,  nk=48, fh=2,   fk=6,  ns=88, ne=0, fs=0, gun=True), 130)],
+    "crouch_shoot": [(P(lean=18, nh=78, nk=135, fh=68, fk=130, ns=92, ne=0, fs=10, fe=40, gun=True), 140)],
+    "jump_shoot": [(P(lean=8, nh=62, nk=95, fh=12, fk=55, ns=86, ne=0, fs=120, fe=20, gun=True), 140)],
     "backdash": [(P(lean=-16, nh=-24, nk=30, fh=22, fk=18, ns=-30, ne=30, fs=-40, fe=30), 110),
                  (P(lean=-10, nh=-8, nk=16, fh=10, fk=12, ns=-15, ne=25, fs=-25, fe=25), 110)],
     "hurt":  [(P(lean=-26, nh=-6, nk=20, fh=14, fk=12, ns=60, ne=30, fs=40, fe=30), 220)],
@@ -93,7 +101,8 @@ def solve(pose):
         bones.extend([(layer, hip, knee, THICK["upperLeg"], col),
                       (layer, knee, ankle, THICK["lowerLeg"], col),
                       (layer, ankle, toe, 2, col)])
-    def arm(s, e, col, layer, sword=None):
+    MUZ = []
+    def arm(s, e, col, layer, sword=None, gun=False):
         elbow = at(sternum, s, L["upperArm"]); wrist = at(elbow, s + e, L["forearm"])
         hand = at(wrist, s + e, L["hand"] * 0.6)
         sh = at(sternum, 0, 2.0)               # shoulder sits just under the neck line
@@ -101,23 +110,27 @@ def solve(pose):
                        (layer, elbow, wrist, THICK["forearm"], col),
                        (layer, wrist, hand, 2, col)])
         if sword is not None:
-            tip = at(hand, s + e + sword, HERO_H * 0.32)   # sword: blade angle off the forearm, 0 = straight on
-            bones.append((3, hand, tip, 1, SWORD))
+            tip = at(hand, s + e + sword, HERO_H * 0.21)   # shortsword   # sword: blade angle off the forearm, 0 = straight on
+            bones.append((3, hand, tip, 2, SWORD))
+        if gun:
+            muzzle = at(hand, s + e, 5.0)
+            bones.append((3, wrist, muzzle, 3, SWORD)); bones.append((3, hand, at(hand, s + e - 90, 2.5), 2, SWORD))
+            MUZ.append(muzzle)
     leg(pose["fh"], pose["fk"], FAR, 0); arm(pose["fs"], pose["fe"], FAR, 0)
     # torso as a tapered body (not a tube): hips, narrow waist, deep chest pushed forward, thin neck
     bones.append((1, hip, sternum, None, NEAR))
     bones.append((1, sternum, chin, 2, NEAR))
-    leg(pose["nh"], pose["nk"], NEAR, 2); arm(pose["ns"], pose["ne"], NEAR, 2, pose["sword"])
+    leg(pose["nh"], pose["nk"], NEAR, 2); arm(pose["ns"], pose["ne"], NEAR, 2, pose["sword"], pose["gun"])
     if pose["roll"]:
         r = math.radians(pose["roll"]); c, s_ = math.cos(r), math.sin(r)
         rot = lambda q: (q[0] * c - q[1] * s_, q[0] * s_ + q[1] * c)
         bones = [(l, rot(a), rot(b), t, col) for l, a, b, t, col in bones]
         head_c = rot(head_c)
-    return bones, head_c
+    return bones, head_c, (MUZ[0] if MUZ else None)
 
 # --- adapter: draw a pose into a cell -------------------------------------------------
 def draw_pose(pose):
-    bones, head_c = solve(pose)
+    bones, head_c, muz = solve(pose)
     r = L["head"] / 2 - 0.6           # head reads smaller than the shoulders
     pts = [q for _, a, b, *_ in bones for q in (a, b)] + [(head_c[0], head_c[1] + r)]
     low = max(q[1] for q in pts)               # lowest point lands on the pivot row
@@ -144,7 +157,8 @@ def draw_pose(pose):
                 if t > 2: d.ellipse([x - h, y - h, x + h, y + h], fill=col)
         if layer == 1:
             x, y = T(head_c); d.ellipse([x - r, y - r, x + r, y + r], fill=NEAR)
-    return img
+    m = (round(muz[0] + ox), round(muz[1] + oy)) if muz else None
+    return img, m
 
 # --- sheet ----------------------------------------------------------------------------
 def main():
@@ -153,12 +167,14 @@ def main():
     rows = math.ceil(len(cells) / COLS)
     W, H = COLS * CELL, rows * CELL
     sheet = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    frames, tags, slice_keys, n = [], [], [], 0
+    frames, tags, slice_keys, muzzle_keys, n = [], [], [], [], 0
     for name, keys in MOVES.items():
         start = n
         for i, (pose, dur) in enumerate(keys):
             x, y = (n % COLS) * CELL, (n // COLS) * CELL
-            sheet.alpha_composite(draw_pose(pose), (x, y))
+            cimg, muz = draw_pose(pose)
+            sheet.alpha_composite(cimg, (x, y))
+            if muz: muzzle_keys.append({"frame": n, "bounds": {"x": muz[0], "y": muz[1], "w": 1, "h": 1}})
             frames.append({"filename": f"hero {n}.aseprite",
                            "frame": {"x": x, "y": y, "w": CELL, "h": CELL},
                            "rotated": False, "trimmed": False,
@@ -173,7 +189,8 @@ def main():
                      "image": "hero.png", "format": "RGBA8888", "size": {"w": W, "h": H}, "scale": "1",
                      "frameTags": tags,
                      "layers": [{"name": "hero", "opacity": 255, "blendMode": "normal"}],
-                     "slices": [{"name": "pivot", "color": "#0000ffff", "keys": slice_keys}],
+                     "slices": [{"name": "pivot", "color": "#0000ffff", "keys": slice_keys},
+                                {"name": "muzzle", "color": "#ff0000ff", "keys": muzzle_keys}],
                      "x_vaniagraybox": {"cell": CELL, "heroHeight": HERO_H, "pivot": list(PIVOT),
                                         "source": "make_hero.py (Vitruvian seed); replace with Saji's export"}}}
     sheet.save(os.path.join(OUT, "hero.png"))
@@ -188,6 +205,7 @@ def main():
     try: font = ImageFont.load_default(size=11)
     except TypeError: font = ImageFont.load_default()
     names = [(nm, i) for nm, i, *_ in cells]
+    muz_at = {mk["frame"]: (mk["bounds"]["x"], mk["bounds"]["y"]) for mk in muzzle_keys}
     for k, (nm, i) in enumerate(names):
         x, y = (k % COLS) * CELL * S, (k // COLS) * CELL * S
         gd.rectangle([x, y, x + CELL * S - 1, y + CELL * S - 1], outline=(200, 200, 200, 255))
@@ -198,6 +216,9 @@ def main():
         hy = by - HERO_H * S
         gd.line([x, hy, x + 10, hy], fill=(30, 30, 140, 255))                            # height mark
         gd.text((x + 4, y + 3), f"{nm} {i}", fill=(30, 30, 140, 255), font=font)
+        if k in muz_at:                                                                  # muzzle
+            mx, my = x + muz_at[k][0] * S + S // 2, y + muz_at[k][1] * S + S // 2
+            gd.ellipse([mx - 4, my - 4, mx + 4, my + 4], outline=(230, 60, 60, 255), width=2)
     g.save(os.path.join(OUT, "hero_guide.png"))
     print(f"{len(cells)} keyframes, {len(tags)} animations, sheet {W}x{H}, cell {CELL}, hero {HERO_H}px")
 

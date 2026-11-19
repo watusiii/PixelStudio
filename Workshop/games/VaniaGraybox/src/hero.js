@@ -5,6 +5,9 @@
 //   lock   ignore walk input while it plays
 //   air    happens in the air (gravity keeps going)
 //   dash   horizontal push, px/s, in facing direction (negative = backwards)
+//
+// Gun (Mega Man style, its own key): while the trigger timer runs, a state with a row in SHOOT
+// plays its shooting tag instead, on the same frame, so you can walk / jump / crouch and shoot.
 
 export const MOVES = {
   idle:          { anim: 'idle',          loop: true },
@@ -21,12 +24,15 @@ export const MOVES = {
   death:         { anim: 'death',         loop: false, then: null, lock: true },
 };
 
-export const TUNE = { walk: 88, gravity: 980, jump: 330, landAfter: 120 };
+export const SHOOT = { idle: 'shoot', walk: 'walk_shoot', crouch: 'crouch_shoot', jump: 'jump_shoot', fall: 'jump_shoot' };
+
+export const TUNE = { walk: 88, gravity: 980, jump: 330, landAfter: 120, aim: 0.28, bullet: 260, maxBullets: 3 };
 
 export class Hero {
   constructor(anim, x, floorY) {
     this.anim = anim; this.x = x; this.y = floorY; this.vx = 0; this.vy = 0;
     this.floorY = floorY; this.facing = 1; this.ground = true; this.fallSpeed = 0;
+    this.aim = 0; this.shots = [];
     this.set('idle');
   }
   set(state) {
@@ -76,7 +82,19 @@ export class Hero {
     }
     this.x = Math.max(16, Math.min(room.width - 16, this.x));
 
-    this.anim.update(dt, m.loop);
+    // gun: own key, layered on top of whatever we're doing
+    this.aim = Math.max(0, this.aim - dt);
+    const canShoot = SHOOT[this.state] && this.state !== 'death';
+    if (k.pressed('shoot') && canShoot) { this.aim = TUNE.aim; this.wantShot = true; }
+    const want = this.aim > 0 && SHOOT[this.state] ? SHOOT[this.state] : this.move.anim;
+    if (this.anim.name !== want && (this.aim > 0 || SHOOT[this.state])) this.anim.play(want, false, true);
+
+    this.anim.update(dt, this.aim > 0 ? true : m.loop);
+    if (this.wantShot) {
+      this.wantShot = false;
+      const mz = this.anim.muzzle || { x: 14, y: -30 };
+      this.shots.push({ x: this.x + mz.x * this.facing, y: this.y + mz.y, dir: this.facing });
+    }
     if (this.anim.done && m.then && (this.ground || m.air)) this.set(m.then);
   }
 }

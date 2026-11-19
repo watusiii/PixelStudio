@@ -29,16 +29,28 @@ export async function loadSheet(jsonUrl) {
     const k = ps.keys[0];
     pivot = k.pivot ? { x: k.bounds.x + k.pivot.x, y: k.bounds.y + k.pivot.y } : { x: k.bounds.x, y: k.bounds.y };
   }
-  return { img, frames, tags, pivot, cell };
+  // muzzle: a slice named "muzzle", one key per shooting frame (Aseprite slice keys). Where bullets start.
+  const muzzle = {};
+  const ms = (data.meta.slices || []).find(s => s.name.toLowerCase() === 'muzzle');
+  if (ms) for (const k of ms.keys) muzzle[k.frame] = { x: k.bounds.x, y: k.bounds.y };
+  return { img, frames, tags, pivot, cell, muzzle };
 }
 
 export class Animator {
   constructor(sheet) { this.sheet = sheet; this.play('idle'); }
   has(name) { return !!this.sheet.tags[name]; }
-  play(name, restart = false) {
+  play(name, restart = false, keepFrame = false) {
     if (!this.has(name)) name = this.has('idle') ? 'idle' : Object.keys(this.sheet.tags)[0];
     if (this.name === name && !restart) return;
-    this.name = name; this.i = 0; this.t = 0; this.done = false;
+    const i = keepFrame ? this.i : 0, t = keepFrame ? this.t : 0;
+    this.name = name; this.done = false;
+    this.i = Math.min(i, this.sheet.tags[name].length - 1); this.t = t;
+  }
+  // muzzle of the current frame relative to the pivot, or null
+  get muzzle() {
+    const id = this.sheet.tags[this.name][this.i], m = this.sheet.muzzle[id];
+    if (!m) return null;
+    return { x: m.x - this.sheet.pivot.x, y: m.y - this.sheet.pivot.y };
   }
   update(dt, loop) {
     const ids = this.sheet.tags[this.name];
